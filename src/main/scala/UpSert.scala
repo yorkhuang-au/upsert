@@ -1,5 +1,3 @@
-package com.macquarie.redshift_poc
-
 package com.macquarie.rmg.redshift_poc
 
 // import scala.collection.JavaConversions._
@@ -218,30 +216,3 @@ object UpSert {
     spark.stop()
   } // end main
 }
-
-
-dependencies {
-    implementation'org.scala-lang:scala-library:2.11.8'
-//    // For running just with Spark Core
-    implementation 'org.apache.spark:spark-core_2.11:2.4.0'
-    // implementation 'com.google.guava:guava:16.0.1-jre'
-
-    // Spark SQL subsumes Spark Core
-    implementation 'org.apache.spark:spark-sql_2.11:2.4.0'
-    // implementation 'org.apache.spark:spark-hive_2.11:2.4.0'
-    // implementation files('libs/redshift-jdbc42-2.1.0.1.jar')
-    // // Use Scalatest for testing our library
-    // testImplementation 'junit:junit:null'
-    // testImplementation 'org.scalatest:scalatest_2.13:3.1.2'
-    // testImplementation 'org.scalatestplus:junit-4-12_2.13:3.1.2.0'
-
-    // // Need scala-xml at test runtime
-    // testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.13:1.2.0'
-}
-
-// application {
-//     // Define the main class for the application.
-//     // mainClassName = 'com.tutorial.spark.SimpleSparkJob'
-//     mainClassName = 'com.macquarie.rmg.redshift_poc.UpSert'
-// }
-
