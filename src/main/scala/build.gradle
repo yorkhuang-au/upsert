@@ -1,0 +1,7 @@
+provided "org.apache.spark:spark-core_2.11:2.4.0"
+provided "org.apache.spark:spark-sql_2.11:2.4.0"
+provided "org.apache.spark:spark-hive_2.11:2.4.0"
+implementation "com.fasterxml.jackson.core:jackson-databind:2.6.7.1"
+provided "org.apache.hadoop:hadoop-aws:3.1.1"
+compile "org.scala-lang:scala-library:2.11.12"
+compile "com.alibaba:fastjson:1.2.76"
