@@ -1,0 +1,246 @@
+buildscript {
+    repositories {
+        mavenLocal()
+
+        maven{
+            name "thirdparty"
+            url "https://artifactory.devtools.syd.c1.macquarie.com/artifactory/thirdparty"
+            credentials {
+                username artifactoryUser
+                password artifactoryPassword
+            }
+        }
+        maven {
+            name "public-release"
+            url "https://artifactory.devtools.syd.c1.macquarie.com/artifactory/libs-release"
+            credentials {
+                username artifactoryUser
+                password artifactoryPassword
+            }
+        }
+        /*maven {
+                name "maven-central"
+                url "https://nexus.internal.macquarie.com/content/repositories/central/"
+                credentials {
+                  username mavenUser
+                  password mavenPassword
+                }
+        }	*/
+        maven {
+            name "atlassian-public"
+            url "https://artifactory.devtools.syd.c1.macquarie.com:443/artifactory/atlassian-public-cache"
+            credentials {
+                username artifactoryUser
+                password artifactoryPassword
+            }
+        }
+
+        maven {
+            name "maven-central-cache"
+            url "https://artifactory.devtools.syd.c1.macquarie.com/artifactory/maven-central-cache"
+            credentials {
+                username artifactoryUser
+                password artifactoryPassword
+            }
+        }
+
+        maven {
+            name "AtlassianMavenExternal-cache"
+            url "https://artifactory.devtools.syd.c1.macquarie.com/artifactory/AtlassianMavenExternal-cache"
+            credentials {
+                username artifactoryUser
+                password artifactoryPassword
+            }
+        }
+
+        maven {
+            name "ficc-releases"
+            url "https://artifactory.devtools.syd.c1.macquarie.com/artifactory/ficc-release"
+            credentials {
+                username artifactoryUser
+                password artifactoryPassword
+            }
+        }
+    }
+}
+
+plugins {
+    // Apply the java plugin to add support for Java
+    id 'scala'
+
+    // Apply the application plugin to add support for building an application
+    id 'application'
+
+    // id 'maven'
+    id 'maven-publish'
+}
+
+allprojects {
+    repositories {
+        // mavenCentral()
+        jcenter()
+        mavenLocal()
+        maven {
+            url "https://artifactory.devtools.syd.c1.macquarie.com:443/artifactory/libs-release"
+            credentials {
+                username artifactoryUser
+                password artifactoryPassword
+            }
+        }
+    }
+}
+
+// // repositories {
+// //     mavenCentral()
+// // }
+
+// dependencies {
+//     // Use Scala 2.11 in our library project
+//     implementation 'org.scala-lang:scala-library:2.11.8'
+    
+//     // implementation files('libs/spark-core_2.11-2.4.0.jar')
+//     // implementation files('libs/spark-sql_2.11-2.4.0.jar')
+//     // implementation files('libs/spark-hive_2.11-2.4.0.jar')
+//     implementation group: 'org.apache.spark', name:'spark-core_2.11', version:'2.4.0'
+//     implementation group: 'org.apache.spark', name:'spark-sql_2.11', version:'2.4.0'
+//     implementation group: 'org.apache.spark', name:'spark-hive_2.11', version:'2.4.0'
+    
+//     // This dependency is used by the application.
+//     // implementation 'com.google.guava:guava:30.0-jre'
+    
+//     // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk
+//     // implementation group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.12.20'
+
+//     // implementation group: 'com.github.andyglow', name: 'ulid_2.13', version: '0.0.3'
+    
+//     // implementation group: 'org.wvlet.airframe', name: 'airframe-ulid', version: '21.4.0'
+//     implementation files('libs/ImpalaJDBC42-2.6.18.1021.jar')
+
+//     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+//     // implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+//     // // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+//     // implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+    
+//     // Use Scalatest for testing our library
+//     // testImplementation 'junit:junit:4.13.1'
+//     // testImplementation 'org.scalatest:scalatest_2.11:3.2.3'
+//     // testImplementation 'org.scalatestplus:junit-4-13_2.11:3.2.2.0'
+
+//     // // Need scala-xml at test runtime
+//     // testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.11:1.2.0'
+// }
+
+
+publishing {
+
+    publications {
+        mavenJava(MavenPublication) {
+            artifact 'build/distributions/rmg_dqr-'+version+'.zip'
+            groupId 'com.macquarie.rmg.dqr'
+            artifactId 'rmg_dqr'
+            version = version
+       }
+    }
+
+    repositories {
+        maven {
+            name "SdlcArtifactory"
+            if (version.contains("-SNAPSHOT")) {
+                url "https://artifactory.devtools.syd.c1.macquarie.com:443/artifactory/ofr-snapshots"
+            } else {
+                url "https://artifactory.devtools.syd.c1.macquarie.com:443/artifactory/ofr-releases"
+            }
+            credentials {
+                username artifactoryUser
+                password artifactoryPassword
+            }
+        }
+    }
+    task sourcesJar(type: Jar, dependsOn: build) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+}
+publishMavenJavaPublicationToMavenLocal.dependsOn distZip
+publish.dependsOn distZip
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.macquarie.rmg.redshift_poc.UpSert'
+    }
+    doFirst {
+        from { configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) } }
+
+    }
+}
+
+wrapper	{
+    gradleVersion = '5.2.1'
+}
+
+sourceSets.main.resources.srcDirs = [ "src/" ]
+sourceSets.main.resources.includes = [ "**/*.*" ]
+
+application {
+    // Define the main class for the application.
+    mainClassName = 'com.macquarie.rmg.redshift_poc.UpSert'
+}
+
+
+
+/*
+ * This file was generated by the Gradle 'init' task.
+ *
+ * This generated file contains a sample Scala library project to get you started.
+ * For more details take a look at the Scala plugin chapter in the Gradle
+ * User Manual available at https://docs.gradle.org/6.5.1/userguide/scala_plugin.html
+ */
+
+// plugins {
+//     // Apply the scala plugin to add support for Scala
+//     id 'scala'
+
+//     // // Apply the java-library plugin for API and implementation separation.
+//     // id 'java-library'
+
+//     // id 'idea'
+
+//     id 'application'
+// }
+
+// repositories {
+//     // Use jcenter for resolving dependencies.
+//     // You can declare any Maven/Ivy/file repository here.
+//     mavenLocal()
+//     jcenter()
+// }
+
+dependencies {
+    implementation'org.scala-lang:scala-library:2.12.10'
+//    // For running just with Spark Core
+    implementation 'org.apache.spark:spark-core_2.12:3.0.3'
+    // implementation 'com.google.guava:guava:30.0-jre'
+    implementation 'com.google.guava:guava:16.0.1-jre'
+    // com.google.guava:guava:16.0.1
+
+    // Spark SQL subsumes Spark Core
+    implementation 'org.apache.spark:spark-sql_2.12:3.0.3'
+    // implementation 'org.apache.spark:spark-hive_2.12:2.4.0'
+    // implementation files('libs/redshift-jdbc42-2.1.0.1.jar')
+    // // Use Scalatest for testing our library
+    // testImplementation 'junit:junit:null'
+    // testImplementation 'org.scalatest:scalatest_2.13:3.1.2'
+    // testImplementation 'org.scalatestplus:junit-4-12_2.13:3.1.2.0'
+
+    // // Need scala-xml at test runtime
+    // testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.13:1.2.0'
+
+    // implementation files('lib/spark-core_2.11-2.4.0.jar')
+    // implementation files('lib/spark-sql_2.11-2.4.0.jar')
+}
+
+// application {
+//     // Define the main class for the application.
+//     // mainClassName = 'com.tutorial.spark.SimpleSparkJob'
+//     mainClassName = 'com.macquarie.rmg.redshift_poc.UpSert'
+// }
